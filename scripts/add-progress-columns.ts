@@ -14,6 +14,7 @@ async function addColumns() {
   console.log('Checking if columns already exist...')
 
   // Try to select from the columns - if they don't exist, we need to add them
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: testData, error: testError } = await supabase
     .from('analyses')
     .select('progress_step, progress_message')
