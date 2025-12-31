@@ -56,3 +56,4 @@ logs
 # Cache
 .cache
 .parcel-cache
+*.bak
