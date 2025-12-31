@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (!existingUser) {
       console.log('[API /analyze] Creating new user:', userId)
+      // @ts-expect-error - Supabase type inference issue with dynamic schema
       await serverClient
         .from('users')
         .insert({
