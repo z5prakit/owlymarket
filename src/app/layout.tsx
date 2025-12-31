@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
+  other: {
+    'base:app_id': '695552f74d3a403912ed87ba',
+  },
 }
 
 export default function RootLayout({
