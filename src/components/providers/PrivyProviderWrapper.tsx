@@ -41,8 +41,8 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     }
   }, [appId])
 
-  if (!appId) {
-    console.error('[PrivyProvider] Cannot initialize without App ID')
+  // During build/prerender, App ID might not be available - just render children
+  if (!appId || typeof window === 'undefined') {
     return <>{children}</>
   }
 
