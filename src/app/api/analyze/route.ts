@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (!existingUser) {
       console.log('[API /analyze] Creating new user:', userId)
+      // @ts-ignore - Supabase generated types issue
       await serverClient
         .from('users')
         .insert({
