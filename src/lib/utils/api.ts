@@ -34,8 +34,10 @@ export async function apiRequest<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const url = `${baseUrl}${endpoint}`
+  // Use relative URL on client-side, full URL on server-side
+  const url = typeof window !== 'undefined'
+    ? endpoint  // Client-side: use relative URL
+    : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}${endpoint}`  // Server-side: use full URL
 
   try {
     const response = await fetchWithTimeout(url, {
