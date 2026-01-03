@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 // Market URL validation (supports query parameters)
 const POLYMARKET_REGEX = /^https?:\/\/(www\.)?polymarket\.com\/event\/[\w-]+(\?.*)?$/
-const KALSHI_REGEX = /^https?:\/\/(www\.)?kalshi\.com\/markets\/[\w-]+(\?.*)?$/
+const KALSHI_REGEX = /^https?:\/\/(www\.)?kalshi\.com\/markets\/[\w-]+(\/[\w-]+)*(\?.*)?$/
 
 export function isValidMarketUrl(url: string): boolean {
   return POLYMARKET_REGEX.test(url) || KALSHI_REGEX.test(url)
@@ -27,7 +27,7 @@ export function extractMarketId(url: string): string | null {
   }
 
   if (source === 'kalshi') {
-    const match = url.match(/\/markets\/([\w-]+)/)
+    const match = url.match(/\/markets\/([\w-]+(?:\/[\w-]+)*)/)
     return match ? match[1] : null
   }
 
