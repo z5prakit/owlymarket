@@ -8,8 +8,7 @@ import { Container } from '@/components/layout/Container'
 import { MarketInput } from '@/components/analysis/MarketInput'
 import { Card } from '@/components/ui/Card'
 import { PaymentModal } from '@/components/payment/PaymentModal'
-// TESTING PHASE: Privy disabled for anonymous access
-// import { usePrivy } from '@privy-io/react-auth'
+import { useAccount, useSignMessage } from 'wagmi'
 import type { CreateAnalysisResponse } from '@/types/api'
 
 interface PaymentDetails {
@@ -22,8 +21,8 @@ interface PaymentDetails {
 
 export default function HomePage() {
   const router = useRouter()
-  // TESTING PHASE: Privy disabled
-  // const { getAccessToken } = usePrivy()
+  const { address, isConnected } = useAccount()
+  const { signMessageAsync } = useSignMessage()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
@@ -37,9 +36,24 @@ export default function HomePage() {
     setPendingMarketUrl(marketUrl)
 
     try {
-      // TESTING PHASE: Skip Privy authentication
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
+      }
+
+      // Add wallet signature if connected
+      if (isConnected && address) {
+        try {
+          const message = `Analyze market on OwlyMarket\nWallet: ${address}\nTimestamp: ${Date.now()}`
+          const signature = await signMessageAsync({
+            message,
+            account: address
+          })
+          headers['X-Wallet-Address'] = address
+          headers['X-Wallet-Signature'] = signature
+          headers['X-Signature-Message'] = message
+        } catch (e) {
+          console.log('[HomePage] Failed to sign message, proceeding without auth:', e)
+        }
       }
 
       const response = await fetch('/api/analyze', {
@@ -97,10 +111,25 @@ export default function HomePage() {
     setError('')
 
     try {
-      // TESTING PHASE: Skip Privy authentication
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'X-Payment': txHash,
+      }
+
+      // Add wallet signature if connected
+      if (isConnected && address) {
+        try {
+          const message = `Payment verification on OwlyMarket\nWallet: ${address}\nTx: ${txHash}\nTimestamp: ${Date.now()}`
+          const signature = await signMessageAsync({
+            message,
+            account: address
+          })
+          headers['X-Wallet-Address'] = address
+          headers['X-Wallet-Signature'] = signature
+          headers['X-Signature-Message'] = message
+        } catch (e) {
+          console.log('[HomePage] Failed to sign message:', e)
+        }
       }
 
       const response = await fetch('/api/analyze', {

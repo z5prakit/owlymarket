@@ -1,90 +1,46 @@
-import { PrivyClient } from '@privy-io/server-auth'
 import { NextRequest } from 'next/server'
+import { verifyMessage } from 'viem'
 
-// Initialize Privy client (only if secrets are available)
-let privyClient: PrivyClient | null = null
-try {
-  if (process.env.NEXT_PUBLIC_PRIVY_APP_ID && process.env.PRIVY_APP_SECRET) {
-    privyClient = new PrivyClient(
-      process.env.NEXT_PUBLIC_PRIVY_APP_ID,
-      process.env.PRIVY_APP_SECRET
-    )
-  }
-} catch (error) {
-  console.error('[Privy] Failed to initialize client:', error)
-}
+// Wallet authentication using signature verification
 
 /**
- * Get authenticated user from Privy access token
- * Extracts token from Authorization header and verifies it
+ * Get wallet address from request by verifying signature
+ * Returns wallet address if signature is valid, null otherwise
  */
-export async function getPrivyUser(request: NextRequest) {
+export async function getWalletAddress(request: NextRequest): Promise<string | null> {
   try {
-    if (!privyClient) {
-      console.log('[getPrivyUser] Privy client not initialized')
+    const address = request.headers.get('X-Wallet-Address')
+    const signature = request.headers.get('X-Wallet-Signature')
+    const message = request.headers.get('X-Signature-Message')
+
+    if (!address || !signature || !message) {
+      console.log('[getWalletAddress] Missing wallet authentication headers')
       return null
     }
 
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Verify the signature
+    const isValid = await verifyMessage({
+      address: address as `0x${string}`,
+      message,
+      signature: signature as `0x${string}`,
+    })
+
+    if (!isValid) {
+      console.error('[getWalletAddress] Invalid signature')
       return null
     }
 
-    const token = authHeader.replace('Bearer ', '')
-    const verifiedClaims = await privyClient.verifyAuthToken(token)
-
-    // Get full user data
-    const user = await privyClient.getUser(verifiedClaims.userId)
-
-    return user
+    console.log('[getWalletAddress] Verified wallet:', address)
+    return address
   } catch (error) {
-    console.error('Privy auth verification failed:', error)
+    console.error('[getWalletAddress] Signature verification failed:', error)
     return null
   }
 }
 
 /**
- * Get Privy user ID from request (lightweight version)
- * Only verifies token and returns user ID without fetching full user data
+ * Alias for backward compatibility
  */
 export async function getPrivyUserId(request: NextRequest): Promise<string | null> {
-  try {
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('[getPrivyUserId] No Authorization header found')
-      return null
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-
-    // If Privy client is not initialized, return null
-    if (!privyClient) {
-      console.log('[getPrivyUserId] Privy client not initialized - anonymous access')
-      return null
-    }
-
-    // DEVELOPMENT MODE: If PRIVY_APP_SECRET is not set, decode JWT without verification
-    // This allows testing without Privy dashboard access
-    // WARNING: This is insecure and should only be used in development
-    if (!process.env.PRIVY_APP_SECRET && process.env.NODE_ENV === 'development') {
-      console.log('[getPrivyUserId] DEV MODE: Decoding JWT without verification')
-      try {
-        // Simple JWT decode (not verification!)
-        const payload = token.split('.')[1]
-        const decoded = JSON.parse(Buffer.from(payload, 'base64').toString())
-        console.log('[getPrivyUserId] DEV MODE: User ID from token:', decoded.sub || decoded.userId)
-        return decoded.sub || decoded.userId || null
-      } catch (decodeError) {
-        console.error('[getPrivyUserId] DEV MODE: Failed to decode token:', decodeError)
-        return null
-      }
-    }
-
-    // PRODUCTION MODE: Verify token properly
-    const verifiedClaims = await privyClient.verifyAuthToken(token)
-    return verifiedClaims.userId
-  } catch (error) {
-    console.error('Privy auth verification failed:', error)
-    return null
-  }
+  return getWalletAddress(request)
 }
