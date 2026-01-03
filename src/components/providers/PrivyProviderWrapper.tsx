@@ -64,6 +64,12 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
         // Default chain
         defaultChain: base,
         supportedChains: [base],
+        // External wallets - Enable Solana wallets
+        externalWallets: {
+          solana: {
+            enabled: true,
+          },
+        },
       }}
       onSuccess={() => console.log('[PrivyProvider] Login successful')}
     >

@@ -36,12 +36,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user
-    let userId = await getPrivyUserId(request)
+    const userId = await getPrivyUserId(request)
 
-    // TEMPORARY: Allow anonymous testing without authentication
     if (!userId) {
-      userId = 'anonymous-test-user'
-      console.log('[API /analyze] Using anonymous user for testing')
+      throw new AuthError('Authentication required. Please connect your wallet.')
     }
 
     console.log('[API /analyze] User ID:', userId)
@@ -151,7 +149,15 @@ export async function POST(request: NextRequest) {
       }
       currentProbability = getCurrentProbabilityFromEvent(event)
     } else if (source === 'kalshi') {
-      const market = await getKalshiMarket(marketId!)
+      const ticker = parseKalshiUrl(market_url)
+      console.log('[API /analyze] Parsed Kalshi ticker:', ticker)
+      if (!ticker) {
+        throw new ValidationError('Could not parse Kalshi URL')
+      }
+
+      console.log('[API /analyze] Fetching Kalshi market with ticker:', ticker)
+      const market = await getKalshiMarket(ticker)
+      console.log('[API /analyze] Kalshi market response:', market ? 'Found' : 'Not found')
       if (!market) {
         throw new ValidationError('Market not found on Kalshi')
       }
@@ -159,7 +165,7 @@ export async function POST(request: NextRequest) {
         title: market.title,
         description: market.subtitle,
         close_date: market.close_time,
-        volume: market.volume,
+        volume: market.open_interest,
       }
       currentProbability = getKalshiProb(market)
     }
@@ -173,8 +179,9 @@ export async function POST(request: NextRequest) {
       market_title: marketData.title,
     })
 
+    console.log('[API /analyze] Created analysis:', analysis.id)
+
     // Start async analysis (don't wait)
-    // In production, use a queue like BullMQ or Inngest
     performAnalysis(analysis.id, market_url, {
       ...marketData,
       current_probability: currentProbability,
@@ -207,15 +214,8 @@ async function performAnalysis(
       market_data: marketData,
       analysis_id: analysisId,
       onProgress: async (step: string, message: string) => {
-        try {
-          await serverUpdateAnalysis(analysisId, {
-            progress_step: step,
-            progress_message: message,
-          })
-          console.log(`[Analysis ${analysisId}] Progress: ${step} - ${message}`)
-        } catch (err) {
-          console.error(`[Analysis ${analysisId}] Failed to update progress:`, err)
-        }
+        // Just log progress, don't update database (columns may not exist yet)
+        console.log(`[Analysis ${analysisId}] Progress: ${step} - ${message}`)
       },
     })
 
