@@ -39,12 +39,31 @@ export async function getPrivyUserId(request: NextRequest): Promise<string | nul
   try {
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('[getPrivyUserId] No Authorization header found')
       return null
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const verifiedClaims = await privyClient.verifyAuthToken(token)
 
+    // DEVELOPMENT MODE: If PRIVY_APP_SECRET is not set, decode JWT without verification
+    // This allows testing without Privy dashboard access
+    // WARNING: This is insecure and should only be used in development
+    if (!process.env.PRIVY_APP_SECRET && process.env.NODE_ENV === 'development') {
+      console.log('[getPrivyUserId] DEV MODE: Decoding JWT without verification')
+      try {
+        // Simple JWT decode (not verification!)
+        const payload = token.split('.')[1]
+        const decoded = JSON.parse(Buffer.from(payload, 'base64').toString())
+        console.log('[getPrivyUserId] DEV MODE: User ID from token:', decoded.sub || decoded.userId)
+        return decoded.sub || decoded.userId || null
+      } catch (decodeError) {
+        console.error('[getPrivyUserId] DEV MODE: Failed to decode token:', decodeError)
+        return null
+      }
+    }
+
+    // PRODUCTION MODE: Verify token properly
+    const verifiedClaims = await privyClient.verifyAuthToken(token)
     return verifiedClaims.userId
   } catch (error) {
     console.error('Privy auth verification failed:', error)

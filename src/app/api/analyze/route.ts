@@ -36,7 +36,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user
-    const userId = await getPrivyUserId(request)
+    let userId = await getPrivyUserId(request)
+
+    // DEVELOPMENT MODE: Allow testing without authentication
+    // WARNING: This bypasses security and should ONLY be active in development
+    if (!userId && process.env.NODE_ENV === 'development') {
+      console.log('[API /analyze] DEV MODE: Using test user ID for local testing')
+      userId = 'dev-test-user-local-only'
+    }
 
     if (!userId) {
       throw new AuthError('Authentication required. Please connect your wallet.')
