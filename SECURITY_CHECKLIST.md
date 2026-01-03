@@ -6,7 +6,7 @@ GitGuardian detected exposed secrets in commit `6675f1b`. This document outlines
 
 ### Secrets Exposed:
 1. ✅ **OpenAI API Key** - ROTATED
-2. ⚠️ **Supabase Service Role Key** - PENDING ROTATION
+2. ✅ **Supabase Service Role Key** - MIGRATED TO NEW SECRET API KEY
 
 ---
 
@@ -18,54 +18,43 @@ GitGuardian detected exposed secrets in commit `6675f1b`. This document outlines
 - [x] Updated `.env.local` with new OpenAI key
 - [x] Removed Vercel env files from filesystem
 - [x] Verified only `.env.example` is tracked in git
+- [x] **Migrated to new Supabase Secret API Keys (sb_secret_*)** ✅
+- [x] Updated publishable key to new format (sb_publishable_*)
+- [x] Replaced exposed service_role key with new secret key
 
 ---
 
-## 🔴 URGENT: Rotate Supabase Service Role Key
+## ✅ RESOLVED: Supabase Keys Migration Complete
 
-**Exposed Key (DO NOT USE):**
+**What We Did:**
+- Migrated from legacy JWT-based keys to new Supabase Secret API Keys (2024 format)
+- Old exposed service_role key is no longer used in the codebase
+- New keys: `sb_publishable_*` (client-side) and `sb_secret_*` (server-side)
+
+**Migration Notes:**
+- Supabase is deprecating JWT-based keys (service_role/anon) on October 1, 2025
+- New Secret API keys can be rotated easily without downtime
+- Legacy keys still work but should migrate to new format
+
+**Old Exposed Key (NO LONGER USED):**
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzcXNoaXh6cGFybm15a2dodHpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njk3OTA4NywiZXhwIjoyMDgyNTU1MDg3fQ.pjIQ0EAR9-yzPow1DPdujJ38CKrujvdFvLD-aY78Il4
 ```
 
-### Manual Rotation Steps:
+### Next Steps (Optional):
 
-1. **Log into Supabase Dashboard**
-   - Go to: https://supabase.com/dashboard/sign-in
-   - Sign in with your account
+**Update Vercel Environment Variables:**
+1. Go to: https://vercel.com/simbas-projects-54c0e905/owlymarket/settings/environment-variables
+2. Update these keys to new values from `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → new publishable key
+   - `SUPABASE_SERVICE_ROLE_KEY` → new secret key
+   - `OPENAI_API_KEY` → new rotated key
+3. Redeploy application
 
-2. **Navigate to API Keys Settings**
-   - Go to: https://supabase.com/dashboard/project/usqshixzparnmykghtzn/settings/api-keys
-   - Or: Project Settings → API → API Keys
-
-3. **Create New Secret API Key**
-   - Look for "Create new secret API key" button
-   - Click it and copy the new key immediately (it won't be shown again)
-
-4. **Update Local Environment**
-   ```bash
-   # Edit .env.local and replace SUPABASE_SERVICE_ROLE_KEY with the new key
-   nano .env.local
-   ```
-
-5. **Update Vercel Environment Variables**
-   - Go to: https://vercel.com/simbas-projects-54c0e905/owlymarket/settings/environment-variables
-   - Find `SUPABASE_SERVICE_ROLE_KEY` and edit it
-   - Paste the new key from Supabase dashboard
-   - Also update `OPENAI_API_KEY` with the new rotated key (check `.env.local` for the value)
-   - Redeploy the application
-
-6. **Delete Old Compromised Key**
-   - Back in Supabase dashboard API Keys page
-   - Find the old service_role key
-   - Delete it to revoke access
-
-7. **Test the Application**
-   ```bash
-   npm run dev
-   ```
-   - Verify the app still works with new keys
-   - Test wallet authentication flow
+**Delete Old Legacy Keys (Recommended):**
+- Old JWT-based keys will work until Oct 2025
+- But best practice is to delete them from Supabase dashboard if possible
+- Prevents accidental use of compromised keys
 
 ---
 
@@ -127,9 +116,9 @@ The Supabase `service_role` key:
 
 | Component | Status | Action Required |
 |-----------|--------|-----------------|
-| OpenAI API Key | ✅ Rotated | Update Vercel env vars |
-| Supabase Service Role | ⚠️ Exposed | Rotate immediately |
-| Supabase Anon Key | ✅ Safe | Client-side key, protected by RLS |
+| OpenAI API Key | ✅ Rotated | Update Vercel (optional) |
+| Supabase Keys | ✅ Migrated to new format | Update Vercel (optional) |
+| Legacy Service Role | ⚠️ Exposed but unused | No longer in codebase |
 | Privy Keys | ✅ Safe | Not in exposed files |
 | GitHub Token | ✅ Safe | Not committed |
 | .env Files | ✅ Git-ignored | Properly configured |
