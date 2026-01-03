@@ -35,18 +35,14 @@ export async function POST(request: NextRequest) {
       throw new ValidationError('Invalid market URL. Must be Polymarket or Kalshi.')
     }
 
-    // Get authenticated user
+    // Get authenticated user (optional during testing phase)
     let userId = await getPrivyUserId(request)
 
-    // DEVELOPMENT MODE: Allow testing without authentication
-    // WARNING: This bypasses security and should ONLY be active in development
-    if (!userId && process.env.NODE_ENV === 'development') {
-      console.log('[API /analyze] DEV MODE: Using test user ID for local testing')
-      userId = 'dev-test-user-local-only'
-    }
-
+    // TESTING PHASE: Allow anonymous access without wallet connection
+    // When authentication is ready, remove this section
     if (!userId) {
-      throw new AuthError('Authentication required. Please connect your wallet.')
+      console.log('[API /analyze] No authentication - using anonymous user')
+      userId = 'anonymous-user'
     }
 
     console.log('[API /analyze] User ID:', userId)
@@ -71,62 +67,68 @@ export async function POST(request: NextRequest) {
         })
     }
 
-    // Check daily rate limit (2 analyses per day)
-    const dailyCount = await getUserDailyAnalysesCount(userId)
-    console.log('[API /analyze] Daily analyses count:', dailyCount, '/', FREE_TIER_LIMIT)
+    // TESTING PHASE: Skip rate limiting for anonymous users
+    // When authentication is ready, enable rate limiting for all users
+    if (userId !== 'anonymous-user') {
+      // Check daily rate limit (2 analyses per day)
+      const dailyCount = await getUserDailyAnalysesCount(userId)
+      console.log('[API /analyze] Daily analyses count:', dailyCount, '/', FREE_TIER_LIMIT)
 
-    if (dailyCount >= FREE_TIER_LIMIT) {
-      // User exceeded free tier
-      if (ENABLE_PAYMENTS) {
-        // Check if payment header exists
-        const paymentHeader = request.headers.get('X-Payment')
+      if (dailyCount >= FREE_TIER_LIMIT) {
+        // User exceeded free tier
+        if (ENABLE_PAYMENTS) {
+          // Check if payment header exists
+          const paymentHeader = request.headers.get('X-Payment')
 
-        if (!paymentHeader) {
-          // Return 402 Payment Required with x402 payment details
-          console.log('[API /analyze] Free tier exceeded, requesting payment')
-          const paymentDetails = generatePaymentRequirement(userId)
-          return NextResponse.json(paymentDetails, { status: 402 })
-        }
+          if (!paymentHeader) {
+            // Return 402 Payment Required with x402 payment details
+            console.log('[API /analyze] Free tier exceeded, requesting payment')
+            const paymentDetails = generatePaymentRequirement(userId)
+            return NextResponse.json(paymentDetails, { status: 402 })
+          }
 
-        // Verify payment
-        console.log('[API /analyze] Verifying payment...')
-        const txHash = parsePaymentHeader(paymentHeader)
-        if (!txHash) {
-          throw new ValidationError('Invalid payment transaction hash format')
-        }
+          // Verify payment
+          console.log('[API /analyze] Verifying payment...')
+          const txHash = parsePaymentHeader(paymentHeader)
+          if (!txHash) {
+            throw new ValidationError('Invalid payment transaction hash format')
+          }
 
-        const paymentProof = await verifyPayment(
-          txHash,
-          userId,
-          async (hash) => await isPaymentTransactionUsed(hash)
-        )
+          const paymentProof = await verifyPayment(
+            txHash,
+            userId,
+            async (hash) => await isPaymentTransactionUsed(hash)
+          )
 
-        if (!paymentProof) {
-          throw new ValidationError(
-            'Payment verification failed. Please ensure you sent exactly $10 USDC to the correct address on Base network within the last 24 hours.'
+          if (!paymentProof) {
+            throw new ValidationError(
+              'Payment verification failed. Please ensure you sent exactly $10 USDC to the correct address on Base network within the last 24 hours.'
+            )
+          }
+
+          // Record payment transaction
+          await recordPaymentTransaction({
+            tx_hash: txHash,
+            from_address: paymentProof.from,
+            to_address: paymentProof.to,
+            amount: paymentProof.amount,
+            currency: 'USDC',
+            network: 'base',
+            chain_id: 8453,
+            block_number: Number(paymentProof.blockNumber),
+            tx_timestamp: new Date(paymentProof.timestamp * 1000),
+          })
+
+          console.log('[API /analyze] ✓ Payment verified:', txHash, 'amount:', paymentProof.amount, 'USDC')
+          // Payment verified, continue to create analysis
+        } else {
+          throw new RateLimitError(
+            `You've used all ${FREE_TIER_LIMIT} free analyses today. Come back tomorrow!`
           )
         }
-
-        // Record payment transaction
-        await recordPaymentTransaction({
-          tx_hash: txHash,
-          from_address: paymentProof.from,
-          to_address: paymentProof.to,
-          amount: paymentProof.amount,
-          currency: 'USDC',
-          network: 'base',
-          chain_id: 8453,
-          block_number: Number(paymentProof.blockNumber),
-          tx_timestamp: new Date(paymentProof.timestamp * 1000),
-        })
-
-        console.log('[API /analyze] ✓ Payment verified:', txHash, 'amount:', paymentProof.amount, 'USDC')
-        // Payment verified, continue to create analysis
-      } else {
-        throw new RateLimitError(
-          `You've used all ${FREE_TIER_LIMIT} free analyses today. Come back tomorrow!`
-        )
       }
+    } else {
+      console.log('[API /analyze] Anonymous user - skipping rate limit check')
     }
 
     // Extract market ID/slug
