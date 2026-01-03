@@ -79,6 +79,9 @@ export async function getAnalysis(id: string) {
   return data as Analysis
 }
 
+// Alias for consistency
+export const getAnalysisById = getAnalysis
+
 export async function getUserAnalyses(
   userId: string,
   limit = 10,
