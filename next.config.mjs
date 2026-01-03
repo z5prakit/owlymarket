@@ -16,9 +16,6 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-  env: {
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'OwlyMarket',
-  },
 }
 
 export default nextConfig

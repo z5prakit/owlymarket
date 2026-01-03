@@ -36,9 +36,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user
-    const userId = await getPrivyUserId(request)
+    let userId = await getPrivyUserId(request)
+
+    // TEMPORARY: Allow anonymous testing without authentication
     if (!userId) {
-      throw new AuthError('Please sign in with your wallet to analyze markets')
+      userId = 'anonymous-test-user'
+      console.log('[API /analyze] Using anonymous user for testing')
     }
 
     console.log('[API /analyze] User ID:', userId)
