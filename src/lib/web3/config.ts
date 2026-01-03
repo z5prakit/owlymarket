@@ -1,4 +1,4 @@
-import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
+import { defaultWagmiConfig } from '@web3modal/wagmi'
 import { base } from 'viem/chains'
 
 // Get projectId from https://cloud.walletconnect.com
@@ -19,12 +19,4 @@ export const wagmiConfig = defaultWagmiConfig({
   metadata,
 })
 
-// Create modal
-if (typeof window !== 'undefined') {
-  createWeb3Modal({
-    wagmiConfig,
-    projectId,
-    enableAnalytics: false,
-    themeMode: 'light',
-  })
-}
+export { projectId }

@@ -1,10 +1,22 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Header } from '@/components/layout/Header'
+import dynamic from 'next/dynamic'
 import { Footer } from '@/components/layout/Footer'
 import { Web3Provider } from '@/components/providers/Web3Provider'
 import { siteConfig } from '@/config/site'
+
+// Import Header dynamically to avoid SSR issues with WalletConnect
+const Header = dynamic(() => import('@/components/layout/Header').then(mod => ({ default: mod.Header })), {
+  ssr: false,
+  loading: () => (
+    <header className="border-b border-border bg-white">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="text-2xl font-bold text-primary">{siteConfig.name}</div>
+      </div>
+    </header>
+  ),
+})
 
 const inter = Inter({ subsets: ['latin'] })
 
