@@ -56,15 +56,18 @@ export default function HomePage() {
         body: JSON.stringify({ market_url: marketUrl }),
       })
 
-      // TEMPORARY: Bypass 401 check for testing
-      // if (response.status === 401) {
-      //   throw new Error('Please sign in with your wallet to analyze markets. You get 2 free analyses per day!')
-      // }
+      console.log('[HomePage] Response status:', response.status)
+
+      // Handle authentication error
+      if (response.status === 401) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Please connect your wallet to analyze markets')
+      }
 
       if (response.status === 429) {
         // Rate limit exceeded
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Rate limit exceeded')
+        throw new Error(errorData.message || 'Rate limit exceeded. Please try again later.')
       }
 
       if (response.status === 402) {
@@ -76,8 +79,14 @@ export default function HomePage() {
       }
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create analysis')
+        let errorMessage = 'Failed to create analysis'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.message || errorData.error || errorMessage
+        } catch (e) {
+          console.error('[HomePage] Failed to parse error response:', e)
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
