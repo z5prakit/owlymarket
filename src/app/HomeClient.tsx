@@ -6,7 +6,6 @@ import { Container } from '@/components/layout/Container'
 import { MarketInput } from '@/components/analysis/MarketInput'
 import { Card } from '@/components/ui/Card'
 import { PaymentModal } from '@/components/payment/PaymentModal'
-import { useAccount, useSignMessage } from 'wagmi'
 import type { CreateAnalysisResponse } from '@/types/api'
 
 interface PaymentDetails {
@@ -19,14 +18,11 @@ interface PaymentDetails {
 
 export default function HomeClient() {
   const router = useRouter()
-  const { address, isConnected } = useAccount()
-  const { signMessageAsync } = useSignMessage()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
   const [pendingMarketUrl, setPendingMarketUrl] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
-  const [isSubscriptionPayment, setIsSubscriptionPayment] = useState(false)
 
   const handleSubmit = async (marketUrl: string) => {
     setIsLoading(true)
@@ -34,24 +30,9 @@ export default function HomeClient() {
     setPendingMarketUrl(marketUrl)
 
     try {
+      // TESTING PHASE: No authentication required - anonymous access enabled
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
-      }
-
-      // Add wallet signature if connected
-      if (isConnected && address) {
-        try {
-          const message = `Analyze market on OwlyMarket\nWallet: ${address}\nTimestamp: ${Date.now()}`
-          const signature = await signMessageAsync({
-            message,
-            account: address
-          })
-          headers['X-Wallet-Address'] = address
-          headers['X-Wallet-Signature'] = signature
-          headers['X-Signature-Message'] = message
-        } catch (e) {
-          console.log('[HomePage] Failed to sign message, proceeding without auth:', e)
-        }
       }
 
       const response = await fetch('/api/analyze', {
@@ -106,25 +87,10 @@ export default function HomeClient() {
     setError('')
 
     try {
+      // TESTING PHASE: No authentication required
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'X-Payment': txHash,
-      }
-
-      // Add wallet signature if connected
-      if (isConnected && address) {
-        try {
-          const message = `Payment verification on OwlyMarket\nWallet: ${address}\nTx: ${txHash}\nTimestamp: ${Date.now()}`
-          const signature = await signMessageAsync({
-            message,
-            account: address
-          })
-          headers['X-Wallet-Address'] = address
-          headers['X-Wallet-Signature'] = signature
-          headers['X-Signature-Message'] = message
-        } catch (e) {
-          console.log('[HomePage] Failed to sign message:', e)
-        }
       }
 
       const response = await fetch('/api/analyze', {
