@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
-import { Button } from '@/components/ui/Button'
-import { SubscribeModal } from '@/components/subscription/SubscribeModal'
-import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth'
+// TESTING PHASE: Privy disabled
+// import { Button } from '@/components/ui/Button'
+// import { SubscribeModal } from '@/components/subscription/SubscribeModal'
+// import { usePrivy, useLogin, useLogout } from '@privy-io/react-auth'
 
 interface UserStats {
   dailyUsage: {
@@ -16,6 +17,8 @@ interface UserStats {
 }
 
 export function Header() {
+  // TESTING PHASE: Privy disabled - no authentication UI
+  /*
   const [showSubscribeModal, setShowSubscribeModal] = useState(false)
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const { ready, authenticated, user } = usePrivy()
@@ -49,16 +52,10 @@ export function Header() {
     // - For monthly/yearly: Show payment modal or redirect to payment
     setShowSubscribeModal(false)
   }
+  */
 
   return (
     <>
-      {showSubscribeModal && (
-        <SubscribeModal
-          onClose={() => setShowSubscribeModal(false)}
-          onSelectPlan={handleSelectPlan}
-        />
-      )}
-
       <header className="border-b border-border bg-white">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-primary">
@@ -74,38 +71,7 @@ export function Header() {
             <Link href="/dashboard" className="text-text hover:text-primary">
               Dashboard
             </Link>
-
-            {authenticated && user ? (
-              <div className="flex items-center gap-3">
-                <div className="text-sm">
-                  <div className="text-text-muted">
-                    {user.email?.address || user.wallet?.address?.slice(0, 6) + '...' + user.wallet?.address?.slice(-4)}
-                  </div>
-                  {userStats?.dailyUsage && (
-                    <div className={`text-xs ${userStats.dailyUsage.remaining > 0 ? 'text-primary' : 'text-error'}`}>
-                      {userStats.dailyUsage.remaining}/{userStats.dailyUsage.limit} analyses left today
-                    </div>
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSignOut}
-                  disabled={!ready}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleSignIn}
-                disabled={!ready}
-              >
-                {ready ? 'Sign In' : 'Loading...'}
-              </Button>
-            )}
+            {/* TESTING PHASE: Sign in/out buttons hidden */}
           </nav>
         </div>
       </header>

@@ -8,7 +8,8 @@ import { Container } from '@/components/layout/Container'
 import { MarketInput } from '@/components/analysis/MarketInput'
 import { Card } from '@/components/ui/Card'
 import { PaymentModal } from '@/components/payment/PaymentModal'
-import { usePrivy } from '@privy-io/react-auth'
+// TESTING PHASE: Privy disabled for anonymous access
+// import { usePrivy } from '@privy-io/react-auth'
 import type { CreateAnalysisResponse } from '@/types/api'
 
 interface PaymentDetails {
@@ -21,7 +22,8 @@ interface PaymentDetails {
 
 export default function HomePage() {
   const router = useRouter()
-  const { getAccessToken } = usePrivy()
+  // TESTING PHASE: Privy disabled
+  // const { getAccessToken } = usePrivy()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
@@ -35,19 +37,9 @@ export default function HomePage() {
     setPendingMarketUrl(marketUrl)
 
     try {
-      // Get access token from Privy (optional for testing)
-      let accessToken
-      try {
-        accessToken = await getAccessToken()
-      } catch (e) {
-        console.log('[HomePage] No Privy token available, proceeding without auth')
-      }
-
+      // TESTING PHASE: Skip Privy authentication
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
-      }
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`
       }
 
       const response = await fetch('/api/analyze', {
@@ -105,13 +97,10 @@ export default function HomePage() {
     setError('')
 
     try {
-      const accessToken = await getAccessToken()
+      // TESTING PHASE: Skip Privy authentication
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'X-Payment': txHash,
-      }
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`
       }
 
       const response = await fetch('/api/analyze', {

@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
-import { PrivyProvider, usePrivy } from '@privy-io/react-auth'
-import { base } from 'viem/chains'
+// TESTING PHASE: Privy disabled for anonymous access
+// import { PrivyProvider, usePrivy } from '@privy-io/react-auth'
+// import { base } from 'viem/chains'
 
 // Component to handle user sync on login
+// TESTING PHASE: Disabled
+/*
 function UserSyncHandler() {
   const { authenticated, user } = usePrivy()
 
@@ -29,8 +32,17 @@ function UserSyncHandler() {
 
   return null
 }
+*/
 
 export function PrivyProviderWrapper({ children }: { children: React.ReactNode }) {
+  // TESTING PHASE: Skip Privy entirely - render children without provider
+  useEffect(() => {
+    console.log('[PrivyProvider] TESTING MODE: Privy disabled for anonymous access')
+  }, [])
+
+  return <>{children}</>
+
+  /* TESTING PHASE: Original Privy code disabled
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID
 
   useEffect(() => {
