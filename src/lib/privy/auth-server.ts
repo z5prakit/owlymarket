@@ -1,11 +1,18 @@
 import { PrivyClient } from '@privy-io/server-auth'
 import { NextRequest } from 'next/server'
 
-// Initialize Privy client
-const privyClient = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID!,
-  process.env.PRIVY_APP_SECRET!
-)
+// Initialize Privy client (only if secrets are available)
+let privyClient: PrivyClient | null = null
+try {
+  if (process.env.NEXT_PUBLIC_PRIVY_APP_ID && process.env.PRIVY_APP_SECRET) {
+    privyClient = new PrivyClient(
+      process.env.NEXT_PUBLIC_PRIVY_APP_ID,
+      process.env.PRIVY_APP_SECRET
+    )
+  }
+} catch (error) {
+  console.error('[Privy] Failed to initialize client:', error)
+}
 
 /**
  * Get authenticated user from Privy access token
@@ -13,6 +20,11 @@ const privyClient = new PrivyClient(
  */
 export async function getPrivyUser(request: NextRequest) {
   try {
+    if (!privyClient) {
+      console.log('[getPrivyUser] Privy client not initialized')
+      return null
+    }
+
     const authHeader = request.headers.get('Authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null
@@ -44,6 +56,12 @@ export async function getPrivyUserId(request: NextRequest): Promise<string | nul
     }
 
     const token = authHeader.replace('Bearer ', '')
+
+    // If Privy client is not initialized, return null
+    if (!privyClient) {
+      console.log('[getPrivyUserId] Privy client not initialized - anonymous access')
+      return null
+    }
 
     // DEVELOPMENT MODE: If PRIVY_APP_SECRET is not set, decode JWT without verification
     // This allows testing without Privy dashboard access
