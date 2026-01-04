@@ -100,12 +100,24 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error('[API /analyze/:id/process] Failed:', error)
+    console.error('[API /analyze/:id/process] Failed with error:', error)
+    console.error('[API /analyze/:id/process] Error type:', typeof error)
+    console.error('[API /analyze/:id/process] Error name:', error instanceof Error ? error.name : 'N/A')
+    console.error('[API /analyze/:id/process] Error message:', error instanceof Error ? error.message : String(error))
+    console.error('[API /analyze/:id/process] Error stack:', error instanceof Error ? error.stack : 'N/A')
+
+    // Log full error object for debugging
+    if (error instanceof Error && 'cause' in error) {
+      console.error('[API /analyze/:id/process] Error cause:', error.cause)
+    }
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[API /analyze/:id/process] Storing error message:', errorMessage)
 
     try {
       await serverUpdateAnalysis(params.id, {
         status: 'failed',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
+        error_message: errorMessage,
       })
     } catch (updateError) {
       console.error('[API /analyze/:id/process] Failed to update status:', updateError)
