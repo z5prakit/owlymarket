@@ -65,37 +65,18 @@ export async function runAgentOrchestration(
 
   const allRawEvidence = [...proResearch.evidence, ...conResearch.evidence]
 
-  // Step 3: Critique evidence
-  console.log('[Orchestrator] Step 3: Critiquing...')
-  if (input.onProgress) {
-    await input.onProgress('critiquing', 'Evaluating evidence quality and reliability...')
-  }
-  const critique = await runCriticAgent({ evidence: allRawEvidence })
+  // Step 3: Critique evidence (SKIPPED for Vercel Hobby 10s timeout)
+  console.log('[Orchestrator] Step 3: Skipping critique (using raw evidence for speed)...')
+  // Skip critique - use raw evidence directly with auto-grading
+  const allEvidence = allRawEvidence.map(e => ({
+    ...e,
+    grade: 'B' as const, // Default grade
+    quality_score: e.relevance_score || 0.7,
+    credibility_issues: [] as string[],
+  }))
 
   // Step 4: Follow-up research (SKIPPED for speed)
-  let allEvidence = critique.graded_evidence
-  if (false && critique.gaps.length >= 3) {
-    console.log('[Orchestrator] Step 4: Follow-up research...')
-    if (input.onProgress) {
-      await input.onProgress('followup', 'Conducting additional research to fill gaps...')
-    }
-    // Limit to top 2 most important gaps for speed
-    const topGaps = critique.gaps.slice(0, 2)
-    const followUp = await runFollowUpAgent({
-      gaps: topGaps,
-      research_question: plan.research_question,
-    })
-
-    if (followUp.additional_evidence.length > 0) {
-      // Re-critique follow-up evidence
-      const followUpCritique = await runCriticAgent({
-        evidence: followUp.additional_evidence,
-      })
-      allEvidence = [...allEvidence, ...followUpCritique.graded_evidence]
-    }
-  } else {
-    console.log('[Orchestrator] Step 4: Skipping follow-up (sufficient evidence)')
-  }
+  console.log('[Orchestrator] Step 4: Skipping follow-up (optimized for Vercel Hobby timeout)')
 
   // Step 5: Bayesian analysis
   console.log('[Orchestrator] Step 5: Analyzing probabilities...')

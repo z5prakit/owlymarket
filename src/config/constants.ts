@@ -17,10 +17,10 @@ export const ENABLE_KALSHI = process.env.NEXT_PUBLIC_ENABLE_KALSHI === 'true'
 export const ENABLE_REAL_PAYMENTS =
   process.env.NEXT_PUBLIC_ENABLE_REAL_PAYMENTS === 'true'
 
-// Analysis settings
-export const MAX_EVIDENCE_PER_SIDE = 3 // Reduced for 30s target
-export const MIN_EVIDENCE_FOR_HIGH_CONFIDENCE = 2
-export const ANALYSIS_TIMEOUT_MS = 120000 // 2 minutes
+// Analysis settings - optimized for Vercel Hobby 10s timeout
+export const MAX_EVIDENCE_PER_SIDE = 1 // Ultra-fast mode for Hobby plan
+export const MIN_EVIDENCE_FOR_HIGH_CONFIDENCE = 1
+export const ANALYSIS_TIMEOUT_MS = 8000 // 8 seconds (buffer for Vercel 10s limit)
 
 // API timeouts
 export const OPENAI_TIMEOUT_MS = 60000

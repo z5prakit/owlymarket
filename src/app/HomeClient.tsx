@@ -74,11 +74,6 @@ export default function HomeClient() {
 
       const data: CreateAnalysisResponse = await response.json()
       console.log('Analysis created:', data)
-
-      // Trigger processing in background (don't wait)
-      fetch(`/api/analyze/${data.id}/process`, { method: 'POST' })
-        .catch(err => console.error('[HomePage] Failed to trigger processing:', err))
-
       router.push(`/analyze/${data.id}`)
     } catch (error) {
       console.error('Error creating analysis:', error)

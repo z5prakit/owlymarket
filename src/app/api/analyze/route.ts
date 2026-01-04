@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverCreateAnalysis, serverUpdateAnalysis, getUserDailyAnalysesCount, isPaymentTransactionUsed, recordPaymentTransaction } from '@/lib/supabase/queries'
 import { createServerClient } from '@/lib/supabase/client'
+import { runAgentOrchestration } from '@/lib/agents/orchestrator'
 import { getPolymarketEvent, parsePolymarketUrl, getCurrentProbabilityFromEvent } from '@/lib/integrations/polymarket'
 import { getKalshiMarket, parseKalshiUrl, getCurrentProbability as getKalshiProb } from '@/lib/integrations/kalshi'
 import { detectMarketSource, extractMarketId } from '@/lib/utils/validation'
@@ -189,8 +190,11 @@ export async function POST(request: NextRequest) {
 
     console.log('[API /analyze] Created analysis:', analysis.id)
 
-    // NOTE: Processing is triggered by client calling /api/analyze/:id/process
-    // This ensures the background task actually runs on Vercel serverless
+    // Start async analysis (don't wait)
+    performAnalysis(analysis.id, market_url, {
+      ...marketData,
+      current_probability: currentProbability,
+    }).catch(console.error)
 
     return NextResponse.json({
       id: analysis.id,
@@ -200,5 +204,57 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     return handleAPIError(error)
+  }
+}
+
+// Background analysis job
+async function performAnalysis(
+  analysisId: string,
+  marketUrl: string,
+  marketData: any
+) {
+  try {
+    // Update status to processing
+    await serverUpdateAnalysis(analysisId, { status: 'processing' })
+
+    // Run agent orchestration with progress tracking
+    const result = await runAgentOrchestration({
+      market_url: marketUrl,
+      market_data: marketData,
+      analysis_id: analysisId,
+      onProgress: async (step: string, message: string) => {
+        // Just log progress, don't update database (columns may not exist yet)
+        console.log(`[Analysis ${analysisId}] Progress: ${step} - ${message}`)
+      },
+    })
+
+    // Save all results in ONE update to ensure atomicity
+    console.log(`[Analysis ${analysisId}] Saving results to database...`)
+    console.log(`[Analysis ${analysisId}] Report data size:`, JSON.stringify(result.final_report).length, 'bytes')
+
+    try {
+      // Update everything at once to avoid race conditions
+      const updateResult = await serverUpdateAnalysis(analysisId, {
+        status: 'completed',
+        market_title: marketData.title,
+        report_json: result.final_report.structured_data,
+      })
+
+      console.log(`[Analysis ${analysisId}] ✓ Updated all fields`)
+      console.log(`[Analysis ${analysisId}] Verify - status:`, updateResult.status)
+      console.log(`[Analysis ${analysisId}] Verify - has report_json:`, updateResult.report_json !== null && updateResult.report_json !== undefined)
+      console.log(`[Analysis ${analysisId}] Successfully saved to database`)
+      console.log(`[Analysis ${analysisId}] Completed in ${result.execution_time}s`)
+    } catch (saveError) {
+      console.error(`[Analysis ${analysisId}] FATAL: Failed to save results:`, saveError)
+      throw saveError
+    }
+  } catch (error) {
+    console.error(`[Analysis ${analysisId}] Failed:`, error)
+
+    await serverUpdateAnalysis(analysisId, {
+      status: 'failed',
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 }
