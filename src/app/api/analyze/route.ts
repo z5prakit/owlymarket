@@ -190,20 +190,15 @@ export async function POST(request: NextRequest) {
 
     console.log('[API /analyze] Created analysis:', analysis.id)
 
-    // Run analysis synchronously within 10s Vercel timeout
-    try {
-      await performAnalysis(analysis.id, market_url, {
-        ...marketData,
-        current_probability: currentProbability,
-      })
-    } catch (error) {
-      console.error('[API /analyze] Analysis failed but returning success:', error)
-      // Don't throw - analysis was created, just failed to complete
-    }
+    // Start async analysis (don't wait)
+    performAnalysis(analysis.id, market_url, {
+      ...marketData,
+      current_probability: currentProbability,
+    }).catch(console.error)
 
     return NextResponse.json({
       id: analysis.id,
-      status: 'completed', // Optimistic - analysis should be done by now
+      status: analysis.status,
       created_at: analysis.created_at,
     }, { status: 201 })
 
