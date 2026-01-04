@@ -5,7 +5,10 @@ import { getPolymarketEvent, parsePolymarketUrl, getCurrentProbabilityFromEvent 
 import { getKalshiMarket, parseKalshiUrl, getCurrentProbability as getKalshiProb } from '@/lib/integrations/kalshi'
 import { handleAPIError } from '@/lib/utils/errors'
 
-export const maxDuration = 300 // 5 minutes (Vercel Pro max)
+// Vercel Pro timeout configuration (requires Pro plan - $20/month)
+// Hobby plan maxes out at 10 seconds regardless of this setting
+export const maxDuration = 300 // 5 minutes (Vercel Pro)
+export const dynamic = 'force-dynamic' // Ensure function runs dynamically
 
 export async function POST(
   request: NextRequest,
