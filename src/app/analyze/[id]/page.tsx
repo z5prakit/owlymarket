@@ -21,9 +21,21 @@ export default function AnalysisPage() {
         const data = await apiRequest<GetAnalysisResponse>(`/api/analyze/${id}`)
         setAnalysis(data)
 
-        // Poll if still processing
+        // If pending or processing, trigger processing chunk
         if (data.status === 'processing' || data.status === 'pending') {
-          setTimeout(fetchAnalysis, 5000)
+          // Call process endpoint to do work
+          fetch(`/api/analyze/${id}/process`, { method: 'POST' })
+            .then(res => res.json())
+            .then(processResult => {
+              console.log('[Analysis] Process result:', processResult)
+              // Poll again after 3 seconds
+              setTimeout(fetchAnalysis, 3000)
+            })
+            .catch(err => {
+              console.error('[Analysis] Process error:', err)
+              // Still poll even if process fails
+              setTimeout(fetchAnalysis, 5000)
+            })
         } else {
           setIsLoading(false)
         }
