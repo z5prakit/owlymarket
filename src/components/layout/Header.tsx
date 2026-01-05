@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { Button } from '@/components/ui/Button'
+import { Logo } from '@/components/ui/Logo'
 import { SubscribeModal } from '@/components/subscription/SubscribeModal'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
@@ -79,8 +80,11 @@ export function Header() {
 
       <header className="border-b border-border bg-background-card backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition">
-            {siteConfig.name}
+          <Link href="/" className="flex items-center gap-3 group">
+            <Logo className="w-10 h-10 group-hover:scale-110 transition-transform" />
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent group-hover:opacity-80 transition">
+              {siteConfig.name}
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/#features" className="text-text-muted hover:text-primary transition">

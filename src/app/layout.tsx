@@ -23,6 +23,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
   other: {
     'base:app_id': '695552f74d3a403912ed87ba',
   },
