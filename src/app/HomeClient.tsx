@@ -174,6 +174,49 @@ export default function HomeClient() {
             <X402Banner />
           </div>
 
+          {/* How It Works Section */}
+          <div id="how-it-works" className="mt-24 mb-24">
+            <h2 className="text-4xl font-bold text-text mb-4 text-center">How It Works</h2>
+            <p className="text-lg text-text-muted mb-12 text-center">
+              Get AI-powered insights in 3 simple steps
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Step 1 */}
+              <Card className="p-6 text-center hover:border-primary transition cursor-default">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary">
+                  <span className="text-3xl font-bold text-primary">1</span>
+                </div>
+                <h3 className="text-xl font-bold text-text mb-3">Connect Wallet</h3>
+                <p className="text-text-muted">
+                  Connect your Base or Solana wallet to get 2 free analyses daily
+                </p>
+              </Card>
+
+              {/* Step 2 */}
+              <Card className="p-6 text-center hover:border-primary transition cursor-default">
+                <div className="w-16 h-16 bg-cta/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-cta">
+                  <span className="text-3xl font-bold text-cta">2</span>
+                </div>
+                <h3 className="text-xl font-bold text-text mb-3">Submit Market URL</h3>
+                <p className="text-text-muted">
+                  Paste any Polymarket or Kalshi prediction market URL
+                </p>
+              </Card>
+
+              {/* Step 3 */}
+              <Card className="p-6 text-center hover:border-primary transition cursor-default">
+                <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-success">
+                  <span className="text-3xl font-bold text-success">3</span>
+                </div>
+                <h3 className="text-xl font-bold text-text mb-3">Get Analysis</h3>
+                <p className="text-text-muted">
+                  Receive detailed AI research with probability estimates in ~60 seconds
+                </p>
+              </Card>
+            </div>
+          </div>
+
           {/* Pricing Section */}
           <div id="pricing" className="mt-24">
             <h2 className="text-4xl font-bold text-text mb-4">Simple Pricing</h2>
