@@ -9,7 +9,7 @@ import { parseUnits, type Address } from 'viem'
 import { base } from 'wagmi/chains'
 
 // USDC Contract address on Base mainnet
-const USDC_ADDRESS = (process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') as Address
+const USDC_ADDRESS = ((process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913').trim()) as Address
 
 // USDC transfer ABI (ERC20)
 const USDC_ABI = [
@@ -50,13 +50,15 @@ export function useX402Payment() {
         await switchChainAsync({ chainId: base.id })
       }
 
-      // Parse amount (USDC has 6 decimals)
-      const amountInUnits = parseUnits(amount, 6)
+      // Parse amount (USDC has 6 decimals) and trim whitespace
+      const cleanAmount = amount.trim()
+      const cleanRecipient = recipient.trim() as Address
+      const amountInUnits = parseUnits(cleanAmount, 6)
 
       console.log('[x402] Sending payment:', {
         from: address,
-        to: recipient,
-        amount: amount + ' USDC',
+        to: cleanRecipient,
+        amount: cleanAmount + ' USDC',
         amountInUnits: amountInUnits.toString(),
       })
 
@@ -65,7 +67,7 @@ export function useX402Payment() {
         address: USDC_ADDRESS,
         abi: USDC_ABI,
         functionName: 'transfer',
-        args: [recipient, amountInUnits],
+        args: [cleanRecipient, amountInUnits],
         chainId: base.id,
       })
 

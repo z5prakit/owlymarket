@@ -14,16 +14,18 @@ interface PaymentDetails {
 }
 
 interface PaymentModalProps {
+  isOpen: boolean
+  onClose: () => void
   paymentDetails: PaymentDetails
   onSubmitTxHash: (txHash: string) => void
-  onCancel: () => void
   isVerifying: boolean
 }
 
 export function PaymentModal({
+  isOpen,
+  onClose,
   paymentDetails,
   onSubmitTxHash,
-  onCancel,
   isVerifying,
 }: PaymentModalProps) {
   const [txHash, setTxHash] = useState('')
@@ -44,10 +46,9 @@ export function PaymentModal({
   }
 
   const handlePayWithWallet = async () => {
-    const hash = await payWithWallet(
-      paymentDetails.recipient as Address,
-      paymentDetails.amount
-    )
+    // Trim recipient address to avoid viem errors
+    const cleanRecipient = paymentDetails.recipient.trim() as Address
+    const hash = await payWithWallet(cleanRecipient, paymentDetails.amount)
 
     if (hash) {
       // Auto-submit tx hash
@@ -194,7 +195,7 @@ export function PaymentModal({
         )}
 
         <button
-          onClick={onCancel}
+          onClick={onClose}
           className="text-sm text-text-muted hover:text-text underline w-full text-center"
           disabled={isVerifying || isPayingwallet}
         >
