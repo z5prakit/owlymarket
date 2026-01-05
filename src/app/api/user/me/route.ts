@@ -1,19 +1,26 @@
 /**
  * GET /api/user/me - Get current user info and usage stats
+ * Uses wallet address as user ID
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getPrivyUserId } from '@/lib/privy/auth-server'
 import { getUserDailyAnalysesCount } from '@/lib/supabase/queries'
 import { handleAPIError } from '@/lib/utils/errors'
 import { FREE_TIER_LIMIT } from '@/config/constants'
+import { isValidWalletAddress, normalizeWalletAddress } from '@/lib/auth/wallet'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getPrivyUserId(request)
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Get wallet address from query parameter
+    const walletAddress = request.nextUrl.searchParams.get('address')
+
+    if (!walletAddress || !isValidWalletAddress(walletAddress)) {
+      return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
+
+    const userId = normalizeWalletAddress(walletAddress)
 
     // Get daily usage count
     const dailyCount = await getUserDailyAnalysesCount(userId)

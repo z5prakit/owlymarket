@@ -1,38 +1,28 @@
 'use client'
 
-import { ReactNode, useMemo, useState } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createWeb3Modal } from '@web3modal/wagmi/react'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
-import { wagmiConfig, projectId } from '@/lib/web3/config'
+import { useMemo, useState } from 'react'
+import { wagmiConfig } from '@/config/wagmi'
 import { getSolanaWallets, SOLANA_RPC_URL } from '@/config/solana'
 
 // Import Solana wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css'
 
-const queryClient = new QueryClient()
+export function MultiChainWalletProvider({ children }: { children: React.ReactNode }) {
+  // React Query client for wagmi
+  const [queryClient] = useState(() => new QueryClient())
 
-// Create Web3Modal only on client-side
-if (typeof window !== 'undefined') {
-  createWeb3Modal({
-    wagmiConfig,
-    projectId,
-    enableAnalytics: false,
-    themeMode: 'light',
-  })
-}
-
-export function Web3Provider({ children }: { children: ReactNode }) {
-  // Solana wallets (Phantom, etc.)
+  // Solana wallets
   const wallets = useMemo(() => getSolanaWallets(), [])
 
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <ConnectionProvider endpoint={SOLANA_RPC_URL}>
-          <WalletProvider wallets={wallets} autoConnect={false}>
+          <WalletProvider wallets={wallets} autoConnect>
             <WalletModalProvider>
               {children}
             </WalletModalProvider>

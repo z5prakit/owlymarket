@@ -11,7 +11,7 @@ import { detectMarketSource, extractMarketId } from '@/lib/utils/validation'
 import { handleAPIError, ValidationError, RateLimitError } from '@/lib/utils/errors'
 import { FREE_TIER_LIMIT } from '@/config/constants'
 import { generatePaymentRequirement, verifyPayment, parsePaymentHeader } from '@/lib/payment/x402'
-import { getPrivyUserId } from '@/lib/privy/auth-server'
+import { isValidWalletAddress, normalizeWalletAddress } from '@/lib/auth/wallet'
 
 const ENABLE_PAYMENTS = process.env.NEXT_PUBLIC_ENABLE_REAL_PAYMENTS === 'true'
 
@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[API /analyze] Received request')
     const body = await request.json()
-    const { market_url } = body
+    const { market_url, wallet_address } = body
     console.log('[API /analyze] Market URL:', market_url)
+    console.log('[API /analyze] Wallet address:', wallet_address)
 
     if (!market_url) {
       throw new ValidationError('market_url is required')
@@ -33,14 +34,14 @@ export async function POST(request: NextRequest) {
       throw new ValidationError('Invalid market URL. Must be Polymarket or Kalshi.')
     }
 
-    // Get authenticated user (optional during testing phase)
-    let userId = await getPrivyUserId(request)
+    // Get user ID from wallet address (optional for anonymous access)
+    let userId = 'anonymous-user'
 
-    // TESTING PHASE: Allow anonymous access without wallet connection
-    // When authentication is ready, remove this section
-    if (!userId) {
-      console.log('[API /analyze] No authentication - using anonymous user')
-      userId = 'anonymous-user'
+    if (wallet_address) {
+      if (!isValidWalletAddress(wallet_address)) {
+        throw new ValidationError('Invalid wallet address format')
+      }
+      userId = normalizeWalletAddress(wallet_address)
     }
 
     console.log('[API /analyze] User ID:', userId)

@@ -21,9 +21,13 @@ if (!apiKey) {
 
 console.log('[OpenAI] Creating OpenAI client with timeout:', OPENAI_TIMEOUT_MS, 'ms')
 
+// Fix for Vercel serverless environment - use native fetch with proper configuration
 export const openai = new OpenAI({
   apiKey,
   timeout: OPENAI_TIMEOUT_MS,
+  maxRetries: 2,
+  // Use native fetch for Vercel compatibility
+  fetch: fetch as unknown as typeof global.fetch,
 })
 
 console.log('[OpenAI] OpenAI client created successfully')

@@ -14,7 +14,8 @@ import { serverUpdateAnalysis } from '@/lib/supabase/queries'
 import { runAgentOrchestration } from '@/lib/agents/orchestrator'
 import { handleAPIError } from '@/lib/utils/errors'
 
-export const maxDuration = 10 // Vercel Hobby max
+export const dynamic = 'force-dynamic'
+export const maxDuration = 300 // 5 minutes for Pro plan
 
 export async function POST(
   request: NextRequest,

@@ -3,16 +3,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getPrivyUserId } from '@/lib/privy/auth-server'
+import { isValidWalletAddress, normalizeWalletAddress } from '@/lib/auth/wallet'
 import { handleAPIError } from '@/lib/utils/errors'
 import { createServerClient } from '@/lib/supabase/client'
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getPrivyUserId(request)
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const body = await request.json()
+    const { wallet_address } = body
+
+    if (!wallet_address || !isValidWalletAddress(wallet_address)) {
+      return NextResponse.json({ error: 'Invalid wallet address' }, { status: 400 })
     }
+
+    const userId = normalizeWalletAddress(wallet_address)
 
     const serverClient = createServerClient()
 
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .insert({
         id: userId,
-        wallet_address: null, // Will be updated if needed
+        wallet_address: wallet_address,
         subscription_tier: 'free',
         analyses_count: 0,
       })

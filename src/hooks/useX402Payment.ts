@@ -1,18 +1,15 @@
 /**
  * x402 Automated Payment Hook
- * Uses Privy wallet to send USDC automatically
+ * Uses wagmi to send USDC on Base network
  */
 
 import { useState } from 'react'
-import { usePrivy, useWallets } from '@privy-io/react-auth'
+import { useAccount, useWriteContract, useSwitchChain } from 'wagmi'
 import { parseUnits, type Address } from 'viem'
-import { base } from 'viem/chains'
-
-// Always use Base mainnet for now (chainId: 8453)
-const CHAIN = base
+import { base } from 'wagmi/chains'
 
 // USDC Contract address on Base mainnet
-const USDC_ADDRESS = process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT as Address
+const USDC_ADDRESS = (process.env.NEXT_PUBLIC_BASE_USDC_CONTRACT || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') as Address
 
 // USDC transfer ABI (ERC20)
 const USDC_ABI = [
@@ -29,8 +26,9 @@ const USDC_ABI = [
 ] as const
 
 export function useX402Payment() {
-  const { ready, authenticated } = usePrivy()
-  const { wallets } = useWallets()
+  const { address, isConnected, chain } = useAccount()
+  const { writeContractAsync } = useWriteContract()
+  const { switchChainAsync } = useSwitchChain()
   const [isPayingwallet, setIsPayingwallet] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,13 +36,8 @@ export function useX402Payment() {
     recipient: Address,
     amount: string
   ): Promise<string | null> => {
-    if (!ready || !authenticated) {
-      setError('Please sign in first')
-      return null
-    }
-
-    if (wallets.length === 0) {
-      setError('No wallet connected')
+    if (!isConnected || !address) {
+      setError('Please connect your wallet first')
       return null
     }
 
@@ -52,38 +45,33 @@ export function useX402Payment() {
     setError(null)
 
     try {
-      const wallet = wallets[0] // Use first wallet
-      await wallet.switchChain(CHAIN.id)
-
-      // Get wallet client from Privy
-      const provider = await wallet.getEthereumProvider()
+      // Switch to Base if needed
+      if (chain?.id !== base.id) {
+        await switchChainAsync({ chainId: base.id })
+      }
 
       // Parse amount (USDC has 6 decimals)
       const amountInUnits = parseUnits(amount, 6)
 
       console.log('[x402] Sending payment:', {
-        from: wallet.address,
+        from: address,
         to: recipient,
         amount: amount + ' USDC',
         amountInUnits: amountInUnits.toString(),
       })
 
       // Send USDC transfer transaction
-      const txHash = await provider.request({
-        method: 'eth_sendTransaction',
-        params: [
-          {
-            from: wallet.address,
-            to: USDC_ADDRESS,
-            data: encodeTransferData(recipient, amountInUnits),
-            chainId: `0x${CHAIN.id.toString(16)}`,
-          },
-        ],
+      const txHash = await writeContractAsync({
+        address: USDC_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'transfer',
+        args: [recipient, amountInUnits],
+        chainId: base.id,
       })
 
       console.log('[x402] ✓ Payment sent:', txHash)
       setIsPayingwallet(false)
-      return txHash as string
+      return txHash
     } catch (err) {
       console.error('[x402] Payment failed:', err)
       setError(err instanceof Error ? err.message : 'Payment failed')
@@ -97,18 +85,4 @@ export function useX402Payment() {
     isPayingwallet,
     error,
   }
-}
-
-// Helper: Encode ERC20 transfer function data
-function encodeTransferData(to: Address, amount: bigint): string {
-  // Function signature: transfer(address,uint256)
-  const functionSignature = '0xa9059cbb' // keccak256("transfer(address,uint256)").slice(0, 10)
-
-  // Encode address (32 bytes, left-padded)
-  const addressParam = to.slice(2).padStart(64, '0')
-
-  // Encode amount (32 bytes, left-padded)
-  const amountParam = amount.toString(16).padStart(64, '0')
-
-  return functionSignature + addressParam + amountParam
 }
