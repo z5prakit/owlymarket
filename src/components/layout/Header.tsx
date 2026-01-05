@@ -77,40 +77,40 @@ export function Header() {
         />
       )}
 
-      <header className="border-b border-border bg-white">
+      <header className="border-b border-border bg-background-card backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary">
+          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:opacity-80 transition">
             {siteConfig.name}
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/#features" className="text-text hover:text-primary">
+            <Link href="/#features" className="text-text-muted hover:text-primary transition">
               Features
             </Link>
-            <Link href="/#pricing" className="text-text hover:text-primary">
+            <Link href="/#pricing" className="text-text-muted hover:text-primary transition">
               Pricing
             </Link>
-            <Link href="/dashboard" className="text-text hover:text-primary">
+            <Link href="/dashboard" className="text-text-muted hover:text-primary transition">
               Dashboard
             </Link>
 
             {/* Chain Switcher */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-background rounded-lg border border-border p-1">
               <button
                 onClick={() => setSelectedChain('base')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-1 rounded-md text-sm font-medium transition cursor-pointer ${
                   selectedChain === 'base'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-primary text-background shadow-lg'
+                    : 'text-text-muted hover:text-text'
                 }`}
               >
                 Base
               </button>
               <button
                 onClick={() => setSelectedChain('solana')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition ${
+                className={`px-3 py-1 rounded-md text-sm font-medium transition cursor-pointer ${
                   selectedChain === 'solana'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-cta text-white shadow-lg'
+                    : 'text-text-muted hover:text-text'
                 }`}
               >
                 Solana

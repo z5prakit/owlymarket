@@ -9,54 +9,55 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary colors (Analytics Dashboard theme)
+        // Dark Mode Primary colors (Fintech/Crypto theme)
         primary: {
-          DEFAULT: '#3B82F6',
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#3B82F6',
-          600: '#2563EB',
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#1E3A8A',
-          950: '#172554',
+          DEFAULT: '#F59E0B', // Amber
+          50: '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
+          950: '#451A03',
         },
         secondary: {
-          DEFAULT: '#60A5FA',
-          500: '#60A5FA',
+          DEFAULT: '#FBBF24', // Yellow
+          500: '#FBBF24',
         },
         cta: {
-          DEFAULT: '#F97316',
-          hover: '#EA580C',
-          light: '#FED7AA',
+          DEFAULT: '#8B5CF6', // Purple
+          hover: '#7C3AED',
+          light: '#C4B5FD',
         },
         background: {
-          DEFAULT: '#F8FAFC',
-          dark: '#0F172A',
+          DEFAULT: '#0F172A', // Deep dark blue/slate
+          card: '#1E293B', // Lighter dark for cards
+          hover: '#334155', // Hover state
         },
         text: {
-          DEFAULT: '#1E293B',
-          muted: '#64748B',
-          light: '#F8FAFC',
+          DEFAULT: '#F8FAFC', // Very light (main text)
+          muted: '#94A3B8', // Muted text (slate-400)
+          dimmed: '#64748B', // More dimmed (slate-500)
         },
         border: {
-          DEFAULT: '#E2E8F0',
-          dark: '#334155',
+          DEFAULT: '#334155', // Slate-700
+          light: '#475569', // Lighter border
         },
-        // Semantic colors
+        // Semantic colors (adjusted for dark mode)
         success: '#10B981',
         warning: '#F59E0B',
         error: '#EF4444',
-        info: '#3B82F6',
+        info: '#60A5FA',
         // Evidence grade colors
         grade: {
           A: '#10B981', // Green - Excellent
-          B: '#3B82F6', // Blue - Good
+          B: '#60A5FA', // Blue - Good
           C: '#F59E0B', // Yellow - Moderate
-          D: '#F97316', // Orange - Weak
+          D: '#FB923C', // Orange - Weak
           F: '#EF4444', // Red - Failed
         },
       },

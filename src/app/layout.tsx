@@ -10,7 +10,7 @@ import { siteConfig } from '@/config/site'
 const Header = dynamic(() => import('@/components/layout/Header').then(mod => ({ default: mod.Header })), {
   ssr: false,
   loading: () => (
-    <header className="border-b border-border bg-white">
+    <header className="border-b border-border bg-background">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="text-2xl font-bold text-primary">{siteConfig.name}</div>
       </div>
@@ -35,9 +35,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-background text-text`}>
         <Web3Provider>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col bg-background">
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />

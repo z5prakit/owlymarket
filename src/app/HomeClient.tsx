@@ -142,7 +142,7 @@ export default function HomeClient() {
 
       <Container className="py-20">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/30 rounded-full mb-8">
             <span className="text-2xl">💎</span>
             <span className="text-primary font-medium">
               Connect wallet → 2 free analyses daily
@@ -152,7 +152,9 @@ export default function HomeClient() {
           <h1 className="text-5xl md:text-6xl font-bold text-text mb-6">
             AI Research for
             <br />
-            <span className="text-primary">Prediction Markets</span>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Prediction Markets
+            </span>
           </h1>
 
           <p className="text-xl text-text-muted mb-12">
@@ -181,7 +183,7 @@ export default function HomeClient() {
 
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {/* Free Tier */}
-              <Card className="p-8 border-2 border-gray-200">
+              <Card className="p-8 border-2 border-border">
                 <h3 className="text-2xl font-bold text-text mb-2">Free</h3>
                 <div className="flex items-baseline gap-2 mb-6">
                   <span className="text-4xl font-bold text-primary">$0</span>
@@ -211,30 +213,30 @@ export default function HomeClient() {
               </Card>
 
               {/* Pro Tier */}
-              <Card className="p-8 border-2 border-primary relative">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+              <Card className="p-8 border-2 border-primary relative bg-background-card">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-secondary text-background px-4 py-1 rounded-full text-sm font-bold">
                   Most Popular
                 </div>
                 <h3 className="text-2xl font-bold text-text mb-2">Pro</h3>
                 <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-4xl font-bold text-primary">$10</span>
+                  <span className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">$10</span>
                   <span className="text-text-muted">USDC</span>
                 </div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
+                    <span className="text-success mt-1">✓</span>
                     <span className="text-text-muted">Unlimited analyses</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
+                    <span className="text-success mt-1">✓</span>
                     <span className="text-text-muted">Priority processing</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
+                    <span className="text-success mt-1">✓</span>
                     <span className="text-text-muted">Advanced insights</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">✓</span>
+                    <span className="text-success mt-1">✓</span>
                     <span className="text-text-muted">Export to PDF</span>
                   </li>
                 </ul>
@@ -252,7 +254,7 @@ export default function HomeClient() {
                       chainId: 8453,
                     })
                   }}
-                  className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                  className="w-full bg-cta hover:bg-cta-hover text-white font-semibold py-3 px-6 rounded-lg transition-colors cursor-pointer"
                 >
                   Subscribe with USDC
                 </button>

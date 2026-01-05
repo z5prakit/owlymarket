@@ -18,10 +18,10 @@ export function Button({
   const baseStyles = 'rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2'
 
   const variants = {
-    primary: 'bg-cta text-white hover:bg-cta-hover focus:ring-cta',
-    secondary: 'bg-primary text-white hover:bg-primary-600 focus:ring-primary',
-    ghost: 'bg-transparent text-primary hover:bg-primary-50 focus:ring-primary',
-    outline: 'bg-white border-2 border-border text-text hover:border-primary hover:text-primary focus:ring-primary',
+    primary: 'bg-cta text-white hover:bg-cta-hover focus:ring-cta cursor-pointer',
+    secondary: 'bg-primary text-background hover:bg-primary-600 focus:ring-primary cursor-pointer',
+    ghost: 'bg-transparent text-primary hover:bg-background-hover focus:ring-primary cursor-pointer',
+    outline: 'bg-transparent border-2 border-border text-text hover:border-primary hover:text-primary hover:bg-background-hover focus:ring-primary cursor-pointer',
   }
 
   const sizes = {

@@ -58,8 +58,8 @@ export function PaymentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div className="bg-background-card border border-border rounded-lg max-w-md w-full p-6 space-y-4 shadow-xl">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-text mb-2">Payment Required</h2>
           <p className="text-text-muted text-sm">
@@ -68,7 +68,7 @@ export function PaymentModal({
         </div>
 
         {/* Payment Details */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <div className="bg-background rounded-lg border border-border p-4 space-y-3">
           <div>
             <label className="text-xs font-medium text-text-muted uppercase">Network</label>
             <p className="text-sm font-mono font-semibold text-text capitalize">
@@ -92,7 +92,7 @@ export function PaymentModal({
                 type="text"
                 value={paymentDetails.recipient}
                 readOnly
-                className="flex-1 px-3 py-2 bg-white border border-border rounded text-xs font-mono"
+                className="flex-1 px-3 py-2 bg-background border border-border rounded text-xs font-mono text-text"
               />
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? '✓ Copied' : 'Copy'}
@@ -104,21 +104,21 @@ export function PaymentModal({
         {/* x402 Automated Payment (Primary Option) */}
         {!showManualInput ? (
           <>
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-gradient-to-r from-cta/20 to-primary/20 border border-cta/40 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">⚡</span>
-                <h3 className="font-semibold text-sm text-blue-900">x402 Instant Payment</h3>
+                <h3 className="font-semibold text-sm text-text">x402 Instant Payment</h3>
               </div>
-              <p className="text-xs text-blue-800 mb-3">
+              <p className="text-xs text-text-muted mb-3">
                 Click below to pay with your connected wallet. The system will automatically verify and unlock your analysis.
               </p>
-              <p className="text-xs text-blue-700 font-semibold">
+              <p className="text-xs text-primary font-semibold">
                 ✓ Automated • ✓ Instant • ✓ Secure
               </p>
             </div>
 
             {paymentError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              <div className="bg-error/20 border border-error/40 rounded-lg p-3 text-sm text-error">
                 {paymentError}
               </div>
             )}
@@ -143,9 +143,9 @@ export function PaymentModal({
         ) : (
           <>
             {/* Manual Input (Fallback) */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-sm text-blue-900 mb-2">Manual Payment Instructions:</h3>
-              <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
+            <div className="bg-info/20 border border-info/40 rounded-lg p-4">
+              <h3 className="font-semibold text-sm text-text mb-2">Manual Payment Instructions:</h3>
+              <ol className="text-xs text-text-muted space-y-1 list-decimal list-inside">
                 <li>Copy the recipient address above</li>
                 <li>Send exactly ${paymentDetails.amount} USDC on Base network</li>
                 <li>Wait for transaction to confirm (usually {'<'}1 minute)</li>
@@ -164,7 +164,7 @@ export function PaymentModal({
                 value={txHash}
                 onChange={(e) => setTxHash(e.target.value)}
                 placeholder="0x..."
-                className="w-full px-4 py-3 border border-border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 bg-background border border-border rounded-lg font-mono text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled={isVerifying}
               />
               <p className="text-xs text-text-muted mt-1">
