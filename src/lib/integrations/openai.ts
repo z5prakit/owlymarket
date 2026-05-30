@@ -7,30 +7,24 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { retryWithBackoff } from '@/lib/utils/api'
 import { OPENAI_TIMEOUT_MS } from '@/config/constants'
 
-const apiKey = process.env.OPENAI_API_KEY
+let openaiClient: OpenAI | null = null
 
-console.log('[OpenAI] Initializing OpenAI client...')
-console.log('[OpenAI] API key present:', !!apiKey)
-console.log('[OpenAI] API key length:', apiKey?.length || 0)
-console.log('[OpenAI] API key prefix:', apiKey?.substring(0, 15) + '...' || 'N/A')
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY
 
-if (!apiKey) {
-  console.error('[OpenAI] ERROR: Missing OPENAI_API_KEY environment variable')
-  throw new Error('Missing OPENAI_API_KEY environment variable')
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY environment variable')
+  }
+
+  openaiClient ??= new OpenAI({
+    apiKey,
+    timeout: OPENAI_TIMEOUT_MS,
+    maxRetries: 2,
+    fetch: fetch as unknown as typeof global.fetch,
+  })
+
+  return openaiClient
 }
-
-console.log('[OpenAI] Creating OpenAI client with timeout:', OPENAI_TIMEOUT_MS, 'ms')
-
-// Fix for Vercel serverless environment - use native fetch with proper configuration
-export const openai = new OpenAI({
-  apiKey,
-  timeout: OPENAI_TIMEOUT_MS,
-  maxRetries: 2,
-  // Use native fetch for Vercel compatibility
-  fetch: fetch as unknown as typeof global.fetch,
-})
-
-console.log('[OpenAI] OpenAI client created successfully')
 
 /**
  * Call OpenAI with structured output using Zod schema
@@ -47,7 +41,7 @@ export async function callOpenAIStructured<T>(
   return retryWithBackoff(async () => {
     try {
       console.log('[OpenAI] Making API call to OpenAI...')
-      const completion = await openai.beta.chat.completions.parse({
+      const completion = await getOpenAIClient().beta.chat.completions.parse({
         model,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -82,7 +76,7 @@ export async function callOpenAI(
   model: string = 'gpt-4o'
 ): Promise<string> {
   return retryWithBackoff(async () => {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAIClient().chat.completions.create({
       model,
       messages: [
         { role: 'system', content: systemPrompt },

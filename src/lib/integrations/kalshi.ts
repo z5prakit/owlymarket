@@ -4,8 +4,9 @@
 
 import { fetchWithTimeout } from '@/lib/utils/api'
 import { MARKET_API_TIMEOUT_MS } from '@/config/constants'
+import { KALSHI_TRADE_API_BASE } from '@/config/market-endpoints'
 
-const KALSHI_API_BASE = 'https://api.elections.kalshi.com/trade-api/v2'
+const KALSHI_API_BASE = KALSHI_TRADE_API_BASE
 
 export interface KalshiMarket {
   ticker: string
